@@ -8,7 +8,6 @@ public class ArrayTaskList extends TaskList {
     private Task[] tasks = new Task[size];
     private int pointer = 0;
     private Exception nullTaskexeption = new Exception("Task can't be null");
-
     public void add(Task task) {
         if (task == null) {
             try {

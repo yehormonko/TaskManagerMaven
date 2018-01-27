@@ -1,4 +1,3 @@
-import Controller.Controller;
 import Model.ArrayTaskList;
 import Model.Task;
 import Model.TaskIO;
@@ -13,17 +12,27 @@ import java.util.Locale;
 import java.util.Scanner;
 
 public class ViewController {
+public static void main(String[] args) {
+	ViewController app = new ViewController();
+	app.menu();
+}
 private static final Logger logger = Logger.getLogger(ViewController.class);
 
 private ArrayTaskList list = new ArrayTaskList();
-private File file; //= new File("Tasks");
+private File file;
 private void loadFile(){
 	System.out.println("Here list of files you can load. Choose one or create another");
 	File directory = new File("TasksFiles");
 	if(!directory.exists()){
 		directory.mkdir();
 	}
-	String list[] = directory.list();
+	FilenameFilter filenameFilter = new FilenameFilter() {
+		@Override
+		public boolean accept(File dir, String name) {
+			return name.endsWith(".txt");
+		}
+	};
+	String list[] = directory.list(filenameFilter);
 	int i;
 	for(i = 0; i < list.length; i++)
 		System.out.println(i+1+". "+list[i]);
@@ -41,8 +50,7 @@ private void loadFile(){
 	}
 	if(choose==i+1){
 		System.out.println("print name of new file");
-		
-		file = new File("TasksFiles",scanner.next());
+		file = new File("TasksFiles",scanner.next()+".txt");
 		try {
 			file.createNewFile();
 		} catch (IOException e) {
@@ -52,14 +60,12 @@ private void loadFile(){
 		}
 	}
 	else{
-		
-			file=new File("TasksFiles\\"+list[choose-1]);
-		
-	}
+		file=new File("TasksFiles\\"+list[choose-1]);
+		TaskIO.readText(this.list,file);
+		}
+
 	
 }
-	
-
 public void remove(Task task){
 	list.remove(task);
 	TaskIO.writeBinary(list,file);
@@ -76,23 +82,19 @@ public void rewrite(){
 public ViewController(){
 	System.out.println("Welcome to TASK MANAGER");
 	loadFile();
-	TaskIO.readText(list,file);
-	
 }
-public void menu() {
-	PropertyConfigurator.configure("log4j.properties");
-	org.apache.log4j.Logger logger = org.apache.log4j.Logger.getRootLogger();
-	StringWriter sw = new StringWriter();
-	PrintWriter pw = new PrintWriter(sw);
-	String sStackTrace;
+public void writeMenu(){
 	System.out.println("________________________________\n" +
 			"Choose action:\n" +
 			"1. Print tasks\n" +
 			"2. Add task\n" +
 			"3. Remove task\n" +
-			"4. Show tasks frome date to date\n" +
+			"4. Show tasks from date to date\n" +
 			"5. Edit task\n"+
 			"6. EXIT\nor type \"exit\" to exit\n_________________________________   ");
+}
+public void menu() {
+	writeMenu();
 	Scanner scanner = new Scanner(System.in);
 	int choose = 0;
 	if (scanner.hasNextInt()) {
@@ -163,8 +165,6 @@ public void menu() {
 }
 
 public void printTask() {
-//	ArrayTaskList list = new ArrayTaskList();
-//	list = controller.getArrayTaskList();
 	if(list.size()==0) {
 		System.out.println("no tasks");
 		return;
@@ -183,9 +183,7 @@ public boolean addTask() {
 	title = new Scanner(System.in).nextLine();
 	System.out.println("Is it repeated? y/n");
 	boolean choise = this.ask();
-	System.out.println(choise);
 	Task created;
-	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS", Locale.ENGLISH);
 	if (!choise) {
 		repeated = false;
 		created = new Task(title, this.inputDate());
@@ -238,33 +236,32 @@ public boolean remove() {
 }
 
 private Date inputDate() {
-	PropertyConfigurator.configure("log4j.properties");
-	org.apache.log4j.Logger logger = org.apache.log4j.Logger.getRootLogger();
-	StringWriter sw = new StringWriter();
-	PrintWriter pw = new PrintWriter(sw);
-	String sStackTrace;
-	String date, tm;
+	String date=null, tm=null;
 	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS", Locale.ENGLISH);
 	Scanner scanner = new Scanner(System.in);
 	System.out.println("print date in format yyyy-MM-dd");
 	date = scanner.next();
 	Date newDate;
+	try{
+		newDate=format.parse(date+" 00:00:00.00");
+	}
+	catch (ParseException e){
+		System.out.println("Wrong date format");
+		return this.inputDate();
+	}
 	System.out.println("print time in format HH:mm");
 	tm = " " + scanner.next() + ":00.00";
 	try {
 		newDate = format.parse(date + tm);
 	} catch (ParseException e) {
 		System.out.println("Wrong date format");
-		e.printStackTrace(pw);
-		sStackTrace = sw.toString();
-		logger.error(sStackTrace+"not parsed date: "+date+tm);
 		return this.inputDate();
 	}
 	return newDate;
 }
 
 public boolean printFromTo() {
-	ArrayTaskList list = new ArrayTaskList();
+	ArrayTaskList list;
 	System.out.println("FROM");
 	Date start = this.inputDate();
 	System.out.println("TO");
@@ -284,29 +281,6 @@ public boolean printFromTo() {
 	return true;
 }
 
-//public void calend() {
-//	System.out.println(controller.getArrayTaskList().getTask(6).getStartTime() +" \n"+controller.getArrayTaskList().getTask(6).getRepeatInterval()+"\n" +controller.getArrayTaskList().getTask(6).nextTimeAfter(controller.getArrayTaskList().getTask(6).getStartTime()));
-//	System.out.println("FROM");
-//	Date start = this.inputDate();
-//	//Date start = new Date(0);
-//	System.out.println("TO");
-//	Date end = this.inputDate();
-//	//Date end = new Date(100000);
-//	System.out.println("+");
-//	SortedMap<Date, Set<Task>> map = Tasks.calendar(controller.getArrayTaskList(), start, end);
-//	System.out.println(map);
-//	for (Map.Entry entry : map.entrySet()) {
-//		if (map.isEmpty()) {
-//			System.out.println("Empty");
-//			return;
-//		}
-//		System.out.println(entry.getKey());
-//		HashSet<Task> tasks = (HashSet<Task>) entry.getValue();
-//		for (Task task : tasks) {
-//			System.out.println("    " + task.toString());
-//		}
-//	}
-//}
 
 private boolean ask() {
 	Scanner scanner = new Scanner(System.in);
@@ -327,33 +301,34 @@ private int input() {
 	}
 	return 0;
 }
-
+public void writeChangeMenu(){
+	System.out.println("what you want to change:" +
+			"\n1. Name" +
+			"\n2. Activate or deactivate" +
+			"\n3. Make repeated or not repeated" +
+			"\n4. Change date(s)" +
+			"\n5. Change interval if its repeated" +
+			"\n6. Return to list of task" +
+			"\n7. Exit");
+}
 public boolean change() {
 	this.printTask();
 	System.out.println("which do you want to change? if no one - print 0");
-	Scanner scanner = new Scanner(System.in);
-	if (!scanner.hasNextInt()) {
+	int number = input();
+	if (number<1||number>list.size()) {
 		System.out.println("print number from 0 to " + list.size());
 		return false;
 	} else {
 		boolean again = false;
-		int number = scanner.nextInt();
 		if (number == 0) return true;
 		Task redacted = list.getTask(number-1);
 		while (!again) {
 			System.out.println("you choosed " +redacted);
-			System.out.println("what you want to change:" +
-					"\n1. Name" +
-					"\n2. Activate or deactivate" +
-					"\n3. Make repeated or not repeated" +
-					"\n4. Change date(s)" +
-					"\n5. Change interval if its repeated" +
-					"\n6. Return to list of task" +
-					"\n7. Exit");
-			
+			writeChangeMenu();
 			int check = input();
 			if(check<1||check>7){
-				System.out.println("print ");
+				System.out.println("print correct number");
+				again=false;
 			}
 			switch (check) {
 				

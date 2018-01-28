@@ -2,8 +2,13 @@ package Model;
 import java.io.*;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
+/*
+*class Link is an element of linked list
+*@author YehorMonko
+*@version With_Maven_and_log4j
+*/
 class Link {
+
     private Task task;
     private Link next;
 
@@ -17,7 +22,13 @@ class Link {
 
      void setNext(Link next) { this.next = next; }
 }
+/*
+*class LinkedTaskList is a self realization of linked list, contain tasks
+*@author YehorMonko
+*@version With_Maven_and_log4j
+*/
 public class LinkedTaskList extends TaskList implements Cloneable, Iterable<Task> {
+
     private int size = 0;
     private  Link first;
 

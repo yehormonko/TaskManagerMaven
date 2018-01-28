@@ -7,10 +7,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 
-
+/*
+*class TaskIO is for input-output of tasks to the file in binary or text way
+*@author YehorMonko
+*@version With_Maven_and_log4j
+ */
 public class TaskIO {
-    public static void write(TaskList tasks, OutputStream out) {
+private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(TaskIO.class);
+
+public static void write(TaskList tasks, OutputStream out) {
         try (DataOutputStream writer = new DataOutputStream(out)) {
             writer.writeInt(tasks.size());
             for (Task task : tasks) {
@@ -27,7 +34,7 @@ public class TaskIO {
                 } else writer.writeLong(task.getTime().getTime());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -60,7 +67,7 @@ public class TaskIO {
                }
            }
        } catch (IOException e) {
-           e.printStackTrace();
+          logger.error(e);
        }
     }
 
@@ -68,7 +75,7 @@ public class TaskIO {
         try {
             write(tasks, new FileOutputStream(file.getPath()));
         } catch (IOException e){
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -78,7 +85,7 @@ public class TaskIO {
                writeBinary(new ArrayTaskList(), file);
                read(tasks, new FileInputStream(file.getPath()));
        } catch (IOException e) {
-           e.printStackTrace();
+           logger.error(e);
        }
     }
 
@@ -105,7 +112,7 @@ public class TaskIO {
                writer.write(ts);
            }
        } catch (IOException e) {
-           e.printStackTrace();
+           logger.error(e);
        }
     }
 
@@ -146,7 +153,7 @@ public class TaskIO {
                    try {
                        time = format.parse(date);
                    } catch (ParseException p){
-                       p.printStackTrace();
+                       logger.error(p);
                    }
                 } else {
                     boolean foundst = false;
@@ -164,7 +171,7 @@ public class TaskIO {
                     try {
                         start = format.parse(date);
                     } catch (ParseException p){
-                        p.printStackTrace();
+                        logger.error(p);
                     }
                     endStr += 2;
                     foundst = false;
@@ -182,7 +189,7 @@ public class TaskIO {
                     try {
                         end = format.parse(date2);
                     } catch (ParseException p){
-                        p.printStackTrace();
+                        logger.error(p);
                     }
                     endStr += 2;
                     for (int i = endStr; i < mass.length; i++) {
@@ -228,7 +235,7 @@ public class TaskIO {
                 LinkedTaskList.ref((LinkedTaskList) tasks);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -236,14 +243,14 @@ public class TaskIO {
        try {
            write(tasks, new FileWriter(file));
        } catch (IOException e) {
-           e.printStackTrace();
+           logger.error(e);
        }
     }
-    public static void readText(TaskList tasks, File file) {
+    public static void readText(TaskList tasks, File file)throws NullPointerException {
         try {
             read(tasks, new FileReader(file.getPath()));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
         
     }

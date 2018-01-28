@@ -1,7 +1,13 @@
 package Model;
 import java.util.Date;
-
+/*
+*class Task if an main element of task manager, constructed from name, date(s) and interval
+* could be repeated or not repeated, active or inactive
+*@author YehorMonko
+*@version With_Maven_and_log4j
+*/
 public class Task implements Cloneable {
+
     private String title = null;
     private Date time = null;
     private Date start = null;

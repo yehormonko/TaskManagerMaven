@@ -2,7 +2,11 @@ package Model;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
+/*
+*class ArrayTaskList for containing tasks, based on array
+*@author YehorMonko
+*@version With_Maven_and_log4j
+ */
 public class ArrayTaskList extends TaskList {
     private int size = 1;
     private Task[] tasks = new Task[size];

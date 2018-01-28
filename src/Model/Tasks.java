@@ -1,6 +1,10 @@
 package Model;
 import java.util.*;
-
+/*
+*class Tasks is for sorting tasks and choosing depends on dates
+*@author YehorMonko
+*@version With_Maven_and_log4j
+ */
 public class Tasks {
          public static Iterable<Task> incoming(Iterable<Task> tasks, Date start, Date end) {
             Iterator<Task> iter = tasks.iterator();

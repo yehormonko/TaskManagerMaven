@@ -1,7 +1,11 @@
 package Model;
 import java.util.Date;
 import java.util.Iterator;
-
+/*
+*class TaskList is abstract class, parent for ArrayTaskList and LinkedTaskLIst
+*@author YehorMonko
+*@version With_Maven_and_log4j
+ */
 public abstract class TaskList implements Iterable<Task> {
     public abstract void add(Task task);
     public abstract boolean remove(Task task);

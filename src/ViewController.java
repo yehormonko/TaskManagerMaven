@@ -1,20 +1,31 @@
 import Model.ArrayTaskList;
 import Model.Task;
 import Model.TaskIO;
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.extras.DOMConfigurator;
+import org.apache.log4j.spi.Configurator;
 
-import java.io.*;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.lang.module.Configuration;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Scanner;
-
+/*
+*class ViewController combine view and controller of MVC because of console interface
+*@author YehorMonko
+*@version With_Maven_and_log4j
+ */
 public class ViewController {
 public static void main(String[] args) {
+	logger.info("start program");
 	ViewController app = new ViewController();
-	app.menu();
+	logger.info("end program");
 }
 private static final Logger logger = Logger.getLogger(ViewController.class);
 
@@ -61,7 +72,13 @@ private void loadFile(){
 	}
 	else{
 		file=new File("TasksFiles\\"+list[choose-1]);
+		try{
 		TaskIO.readText(this.list,file);
+		}catch(NullPointerException e){
+			System.out.println("problem with that file, choose another");
+			logger.error(e);
+			loadFile();
+		}
 		}
 
 	
@@ -77,13 +94,16 @@ public void rewrite(){
 	} catch (IOException e) {
 		logger.error(e);
 	}
-	TaskIO.writeText(list,file);
+	
+		TaskIO.writeText(list,file);
+	
 }
 public ViewController(){
 	System.out.println("Welcome to TASK MANAGER");
 	loadFile();
+	menu();
 }
-public void writeMenu(){
+private void writeMenu(){
 	System.out.println("________________________________\n" +
 			"Choose action:\n" +
 			"1. Print tasks\n" +
@@ -93,7 +113,7 @@ public void writeMenu(){
 			"5. Edit task\n"+
 			"6. EXIT\nor type \"exit\" to exit\n_________________________________   ");
 }
-public void menu() {
+private void menu() {
 	writeMenu();
 	Scanner scanner = new Scanner(System.in);
 	int choose = 0;
@@ -164,7 +184,7 @@ public void menu() {
 	}
 }
 
-public void printTask() {
+private void printTask() {
 	if(list.size()==0) {
 		System.out.println("no tasks");
 		return;
@@ -174,13 +194,18 @@ public void printTask() {
 	}
 }
 
-public boolean addTask() {
+private boolean addTask() {
 	String title;
 	Date time, start, end;
 	boolean repeated, active;
 	Scanner scanner = new Scanner(System.in);
 	System.out.println("print name");
-	title = new Scanner(System.in).nextLine();
+	while (true) {
+		title = new Scanner(System.in).nextLine();
+		if(!title.equals("")) break;
+		System.out.println("you can not use empty name");
+		
+	}
 	System.out.println("Is it repeated? y/n");
 	boolean choise = this.ask();
 	Task created;
@@ -215,7 +240,7 @@ public boolean addTask() {
 	return true;
 }
 
-public boolean remove() {
+private boolean remove() {
 	this.printTask();
 	int choise;
 	System.out.println("Which you want to delete? 0 if no one");
@@ -247,6 +272,7 @@ private Date inputDate() {
 	}
 	catch (ParseException e){
 		System.out.println("Wrong date format");
+		logger.error(e);
 		return this.inputDate();
 	}
 	System.out.println("print time in format HH:mm");
@@ -255,12 +281,13 @@ private Date inputDate() {
 		newDate = format.parse(date + tm);
 	} catch (ParseException e) {
 		System.out.println("Wrong date format");
+		logger.error("Error", e);
 		return this.inputDate();
 	}
 	return newDate;
 }
 
-public boolean printFromTo() {
+private boolean printFromTo() {
 	ArrayTaskList list;
 	System.out.println("FROM");
 	Date start = this.inputDate();
@@ -301,7 +328,7 @@ private int input() {
 	}
 	return 0;
 }
-public void writeChangeMenu(){
+private void writeChangeMenu(){
 	System.out.println("what you want to change:" +
 			"\n1. Name" +
 			"\n2. Activate or deactivate" +
@@ -311,11 +338,12 @@ public void writeChangeMenu(){
 			"\n6. Return to list of task" +
 			"\n7. Exit");
 }
-public boolean change() {
+private boolean change() {
 	this.printTask();
 	System.out.println("which do you want to change? if no one - print 0");
 	int number = input();
-	if (number<1||number>list.size()) {
+	
+	if (number<0||number>list.size()) {
 		System.out.println("print number from 0 to " + list.size());
 		return false;
 	} else {
@@ -413,8 +441,7 @@ public boolean change() {
 					if(!rep){
 						System.out.println("it is not repeated");
 						again=false;
-						this.change();
-						return true;
+						break;
 					}else{
 						System.out.println("print interval in hours");
 						int newInterval= input();

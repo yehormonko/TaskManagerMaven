@@ -1,36 +1,34 @@
+package Controller;
+
 import Model.ArrayTaskList;
 import Model.Task;
 import Model.TaskIO;
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.extras.DOMConfigurator;
-import org.apache.log4j.spi.Configurator;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.module.Configuration;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Scanner;
-/*
-*class ViewController combine view and controller of MVC because of console interface
+/**
+*class Controller combine view and controller of MVC because of console interface
 *@author YehorMonko
 *@version With_Maven_and_log4j
  */
-public class ViewController {
-public static void main(String[] args) {
-	logger.info("start program");
-	ViewController app = new ViewController();
-	logger.info("end program");
-}
-private static final Logger logger = Logger.getLogger(ViewController.class);
+public class Controller {
+
+private static final Logger logger = Logger.getLogger(Controller.class);
 
 private ArrayTaskList list = new ArrayTaskList();
 private File file;
+public static void main(String[] args) {
+	logger.info("start program");
+	Controller app = new Controller();
+	logger.info("end program");
+}
 private void loadFile(){
 	System.out.println("Here list of files you can load. Choose one or create another");
 	File directory = new File("TasksFiles");
@@ -64,6 +62,7 @@ private void loadFile(){
 		file = new File("TasksFiles",scanner.next()+".txt");
 		try {
 			file.createNewFile();
+			logger.debug("created "+file.getName());
 		} catch (IOException e) {
 			logger.error(e);
 			loadFile();
@@ -72,6 +71,7 @@ private void loadFile(){
 	}
 	else{
 		file=new File("TasksFiles\\"+list[choose-1]);
+		logger.debug("loaded "+file.getName());
 		try{
 		TaskIO.readText(this.list,file);
 		}catch(NullPointerException e){
@@ -83,11 +83,11 @@ private void loadFile(){
 
 	
 }
-public void remove(Task task){
+private void remove(Task task){
 	list.remove(task);
-	TaskIO.writeBinary(list,file);
+	rewrite();
 }
-public void rewrite(){
+private void rewrite(){
 	file.delete();
 	try {
 		file.createNewFile();
@@ -98,7 +98,11 @@ public void rewrite(){
 		TaskIO.writeText(list,file);
 	
 }
-public ViewController(){
+
+/**
+ * constructor for launching app. no public methods for it, start automaticly, inside the constructor
+ */
+public Controller(){
 	System.out.println("Welcome to TASK MANAGER");
 	loadFile();
 	menu();
@@ -114,71 +118,73 @@ private void writeMenu(){
 			"6. EXIT\nor type \"exit\" to exit\n_________________________________   ");
 }
 private void menu() {
-	writeMenu();
-	Scanner scanner = new Scanner(System.in);
-	int choose = 0;
-	if (scanner.hasNextInt()) {
-		choose = scanner.nextInt();
-	} else {
-		String exit=scanner.next();
-		if(exit.toLowerCase().equals("exit")){
-			return;
-		}else{
-			System.out.println("print correct number or \"exit\"");
-		}
-		this.menu();
-		return;
-	}
-	if (choose < -1 || choose > 6) {
-		System.out.println("print correct number or \"exit\"");
-		this.menu();
-		return;
-	}
-	boolean stop = false;
-	switch (choose) {
-		case 1: {
-			printTask();
-			menu();
-			break;
-		}
-		case 2: {
-			while (!stop) {
-				stop = addTask();
+	boolean loop = true;
+	while (loop) {
+		writeMenu();
+		Scanner scanner = new Scanner(System.in);
+		int choose = 0;
+		if (scanner.hasNextInt()) {
+			choose = scanner.nextInt();
+		} else {
+			String exit = scanner.next();
+			if (exit.toLowerCase().equals("exit")) {
+				loop=false;
+			} else {
+				System.out.println("print correct number or \"exit\"");
 			}
-			stop = false;
-			menu();
+		}
+		if (choose < -1 || choose > 6) {
+			System.out.println("print correct number or \"exit\"");
+			this.menu();
+			return;
+		}
+		boolean stop = false;
+		switch (choose) {
+			case 1: {
+				printTask();
 				break;
 			}
-		
-		case 3: {
-			while (!stop) {
-				stop = remove();
+			case 2: {
+				while (!stop) {
+					stop = addTask();
+				}
+				stop = false;
+				break;
 			}
-			stop = false;
-			menu();
-			break;
-		}
-		case 4: {
-			while (!stop) {
-			stop = printFromTo();
+			
+			case 3: {
+				while (!stop) {
+					try {
+						stop = remove();
+					}
+					catch (RuntimeException e){
+						System.out.println("problem with that operation");
+						logger.error(e);
+					}
+					
+				}
+				stop = false;
+				break;
 			}
-			menu();
-			break;
-		}
-		case 5:{
-			while (!stop) {
-			stop = change();
+			case 4: {
+				while (!stop) {
+					stop = printFromTo();
+				}
+				stop=false;
+				break;
 			}
-			menu();
-			break;
-		}
-		case 6: {
-			System.out.println("Are you sure? y/n");
-			if (ask())
-				return;
-			else  {
-				menu();
-				return;
+			case 5: {
+				while (!stop) {
+					stop = change();
+				}
+				stop = false;
+				break;
+			}
+			case 6: {
+				System.out.println("Are you sure? y/n");
+				if (ask()){
+					loop=false;
+					break;}
 			}
 		}
 	}
@@ -240,7 +246,7 @@ private boolean addTask() {
 	return true;
 }
 
-private boolean remove() {
+private boolean remove() throws RuntimeException{
 	this.printTask();
 	int choise;
 	System.out.println("Which you want to delete? 0 if no one");
@@ -339,6 +345,7 @@ private void writeChangeMenu(){
 			"\n7. Exit");
 }
 private boolean change() {
+	String smElse = "would you like to change something else? y/n";
 	this.printTask();
 	System.out.println("which do you want to change? if no one - print 0");
 	int number = input();
@@ -365,7 +372,7 @@ private boolean change() {
 					String newName = new Scanner(System.in).nextLine();
 					redacted.setTitle(newName);
 					rewrite();
-					System.out.println("would you like to change something else? y/n");
+					System.out.println(smElse);
 					again = !ask();
 					break;
 				}
@@ -375,7 +382,7 @@ private boolean change() {
 					boolean act = ask();
 					redacted.setActive(act);
 					rewrite();
-					System.out.println("would you like to change something else? y/n");
+					System.out.println(smElse);
 					again = !ask();
 					break;
 				}
@@ -412,7 +419,7 @@ private boolean change() {
 						redacted.setTime(newStart,newEnd,newInterval);
 						rewrite();
 					}
-					System.out.println("would you like to change something else? y/n");
+					System.out.println(smElse);
 					again = !ask();
 					break;
 				}
@@ -432,7 +439,7 @@ private boolean change() {
 						redacted.setTime(newStart,newEnd,redacted.getRepeatInterval());
 						rewrite();
 					}
-					System.out.println("would you like to change something else? y/n");
+					System.out.println(smElse);
 					again = !ask();
 					break;
 				}
@@ -452,7 +459,7 @@ private boolean change() {
 						}
 						redacted.setInterval(newInterval*3600);
 						rewrite();
-						System.out.println("would you like to change something else? y/n");
+						System.out.println(smElse);
 						again = !ask();
 						break;
 					}

@@ -2,6 +2,7 @@
 package Model;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,7 +10,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
-/*
+/**
 *class TaskIO is for input-output of tasks to the file in binary or text way
 *@author YehorMonko
 *@version With_Maven_and_log4j
@@ -17,7 +18,7 @@ import java.util.logging.Logger;
 public class TaskIO {
 private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(TaskIO.class);
 
-public static void write(TaskList tasks, OutputStream out) {
+    private static void write(ArrayTaskList tasks, OutputStream out) {
         try (DataOutputStream writer = new DataOutputStream(out)) {
             writer.writeInt(tasks.size());
             for (Task task : tasks) {
@@ -38,7 +39,7 @@ public static void write(TaskList tasks, OutputStream out) {
         }
     }
 
-    public static void read(TaskList tasks, InputStream in) {
+    private static void read(ArrayTaskList tasks, InputStream in) {
        try (DataInputStream reader = new DataInputStream(in)) {
            if (reader == null) reader.close();
            int size = 0;
@@ -71,7 +72,12 @@ public static void write(TaskList tasks, OutputStream out) {
        }
     }
 
-    public static void writeBinary(TaskList tasks, File file) {
+/**
+ * method for writing ArrayTaskList to file in binary format
+ * @param tasks ArrayTaskList, which should be written to file
+ * @param file file in which ArrayTaskList should be written
+ */
+    public static void writeBinary(ArrayTaskList tasks, File file) {
         try {
             write(tasks, new FileOutputStream(file.getPath()));
         } catch (IOException e){
@@ -79,7 +85,13 @@ public static void write(TaskList tasks, OutputStream out) {
         }
     }
 
-    public static void readBinary(TaskList tasks, File file) {
+/**
+ * method for reading ArrayTaskList from file, where tasks was written in binary way in special format. Can be problems,
+ * if that file was not written by method writeBinary
+ * @param tasks ArrayTaskList, to which will be added all task from file
+ * @param file file from which tasks will be read
+ */
+    public static void readBinary(ArrayTaskList tasks, File file) {
        try {
            if (!file.exists())
                writeBinary(new ArrayTaskList(), file);
@@ -89,8 +101,7 @@ public static void write(TaskList tasks, OutputStream out) {
        }
     }
 
-
-    public static void write(TaskList tasks, Writer out) {
+    private static void write(ArrayTaskList tasks, Writer out) {
        try (BufferedWriter writer = new BufferedWriter(out)) {
            String ts = "";
            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
@@ -116,7 +127,7 @@ public static void write(TaskList tasks, OutputStream out) {
        }
     }
 
-    public static void read(TaskList tasks, Reader in) {
+    private static void read(ArrayTaskList tasks, Reader in) {
         try (BufferedReader reader = new BufferedReader(in)) {
             if (reader == null) reader.close();
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
@@ -231,22 +242,31 @@ public static void write(TaskList tasks, OutputStream out) {
                 active = true;
                 interval = 0;
             }
-            if (tasks.getClass() == LinkedTaskList.class) {
-                LinkedTaskList.ref((LinkedTaskList) tasks);
-            }
+            
         } catch (IOException e) {
             logger.error(e);
         }
     }
 
-    public static void writeText(TaskList tasks, File file) {
+/**
+ * method for writing ArrayTaskList to file in text format. Can be read by people
+ * @param tasks ArrayTaskList, which should be written to file
+ * @param file file in which ArrayTaskList should be written
+ */
+    public static void writeText(ArrayTaskList tasks, File file) {
        try {
            write(tasks, new FileWriter(file));
        } catch (IOException e) {
            logger.error(e);
        }
     }
-    public static void readText(TaskList tasks, File file)throws NullPointerException {
+/**
+ * method for reading ArrayTaskList from file, where tasks was written in text way. ArrayTaskList should be written in
+ * special format, or it will not be read
+ * @param tasks ArrayTaskList, to which will be added all task from file
+ * @param file file from which tasks will be read
+ */
+    public static void readText(ArrayTaskList tasks, File file)throws NullPointerException {
         try {
             read(tasks, new FileReader(file.getPath()));
         } catch (IOException e) {
@@ -255,7 +275,7 @@ public static void write(TaskList tasks, OutputStream out) {
         
     }
 
-    public static String getrepeat(int repeat) {
+    private static String getrepeat(int repeat) {
         String ret = "every [";
         int days = repeat / 86400;
         int hours = (repeat % 86400) / 3600;

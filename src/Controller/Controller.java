@@ -66,7 +66,6 @@ private void loadFile(){
 		} catch (IOException e) {
 			logger.error(e);
 			loadFile();
-			return;
 		}
 	}
 	else{
@@ -193,7 +192,6 @@ private void menu() {
 private void printTask() {
 	if(list.size()==0) {
 		System.out.println("no tasks");
-		return;
 	}
 	for (int i = 0; i < list.size(); i++) {
 		System.out.println(i + 1 + ". " + list.getTask(i).toString());
@@ -270,21 +268,11 @@ private Date inputDate() {
 	String date=null, tm=null;
 	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS", Locale.ENGLISH);
 	Scanner scanner = new Scanner(System.in);
-	System.out.println("print date in format yyyy-MM-dd");
-	date = scanner.next();
+	System.out.println("print date in format yyyy-MM-dd HH:mm");
+	date = scanner.nextLine();
 	Date newDate;
-	try{
-		newDate=format.parse(date+" 00:00:00.00");
-	}
-	catch (ParseException e){
-		System.out.println("Wrong date format");
-		logger.error(e);
-		return this.inputDate();
-	}
-	System.out.println("print time in format HH:mm");
-	tm = " " + scanner.next() + ":00.00";
 	try {
-		newDate = format.parse(date + tm);
+		newDate = format.parse(date+":00.00");
 	} catch (ParseException e) {
 		System.out.println("Wrong date format");
 		logger.error("Error", e);
